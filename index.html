@@ -4,11 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - JC Reunion</title>
-  
   <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  
   <style>
     body {
       font-family: "Noto Sans Thai", sans-serif;
@@ -18,7 +16,6 @@
       height: 100vh;
       background-color: #f0f2f5;
     }
-
     .login-card {
       width: 100%;
       max-width: 400px;
@@ -26,7 +23,6 @@
       box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
       border: none;
     }
-
     .login-card .card-header {
       background-color: #743d88;
       color: white;
@@ -35,12 +31,10 @@
       border-top-right-radius: 10px;
       padding: 20px;
     }
-    
     .login-card .card-header img {
         width: 50px;
         margin-bottom: 10px;
     }
-
     .btn-login {
       background-color: #743d88;
       border-color: #6f42c1;
@@ -48,28 +42,23 @@
       font-weight: 500;
       transition: background-color 0.2s;
     }
-
     .btn-login:hover {
       background-color: #5a349d;
       border-color: #533090;
       color: white;
     }
-
     .input-group-text {
         width: 42px;
         justify-content: center;
     }
-
-     /* 🎯 จัด Layout บนมือถือ */
     @media (max-width: 576px) {
       body {
-        align-items: flex-start; /* จัดให้ชิดด้านบน */
-        padding-top: 5vh;      /* เพิ่มระยะห่างจากขอบบน 5% ของความสูงจอ */
+        align-items: flex-start;
+        padding-top: 5vh;
       }
     }
   </style>
 </head>
-
 <body>
   <div class="card login-card">
     <div class="card-header">
@@ -100,14 +89,12 @@
             จำชื่อผู้ใช้และรหัสผ่านไว้
           </label>
         </div>
-
         <div class="d-grid mb-4">
           <button type="submit" class="btn btn-login btn-lg">
             <i class="fas fa-sign-in-alt me-2"></i> เข้าสู่ระบบ
           </button>
         </div>
       </form>
-      
       <div class="text-center">
         <small class="text-muted">Copyright © 2026 Faculty of Journalism and Mass
           Communication, Thammasat University. <br> All rights reserved. <br>
