@@ -188,272 +188,123 @@
   <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
 
   <script>
-   
-    let isProcessing = false; 
-    let currentMode = 'scanner';
-    let html5QrCode = null;
+   // 🔴 วาง Web App URL จาก GAS ลงตรงนี้
+    const GAS_API_URL = "YOUR_GAS_WEB_APP_URL"; 
 
-    document.addEventListener("DOMContentLoaded", function() {
-      const loggedInUser = sessionStorage.getItem("loggedInUser");
-      const personInCharge = sessionStorage.getItem("personInCharge");
-      
-      if (!loggedInUser) {
-        Swal.fire({ icon: 'error', title: 'ไม่อนุญาตให้เข้าถึง', text: 'กรุณาเข้าสู่ระบบก่อน' }).then(function() { window.open('<?= url ?>', '_top'); });
-      } else {
-        document.getElementById('navUserDisplay').textContent = loggedInUser;
-        document.getElementById('btnUsernameDisplay').textContent = loggedInUser;
-        document.getElementById('navDeptDisplay').textContent = personInCharge || 'Admin';
-      }
-    });
+    // 1. ดึงข้อมูลที่แนบมากับ URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentAdmin = urlParams.get('admin') || "ไม่ระบุชื่อ";
+    const currentUser = urlParams.get('user') || "Admin";
 
-    // ================== BARCODE SCANNER LOGIC ==================
-    
-    $(document).on('click', '#btn-open-scanner', function() {
-      $('#scannerModal').modal('show'); 
-    });
+    let html5QrCode;
+    let isProcessing = false;
 
-    $('#scannerModal').on('shown.bs.modal', function () {
-      document.getElementById('scanner-loading').style.display = 'block';
-      document.getElementById('reader').style.display = 'none';
-
-      Html5Qrcode.getCameras().then(devices => {
-        if (devices && devices.length > 0) {
-          if (!html5QrCode) {
-             html5QrCode = new Html5Qrcode("reader");
-          }
-
-          if (html5QrCode.isScanning) {
-             return; 
-          }
-
-          document.getElementById('scanner-loading').style.display = 'none';
-          document.getElementById('reader').style.display = 'block';
-
-          html5QrCode.start(
-            { facingMode: "environment" }, 
-            { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.0 },
-            (decodedText, decodedResult) => { 
-              $('#scannerModal').modal('hide'); 
-              onScanSuccess(decodedText, decodedResult); 
-            },
-            (errorMessage) => {}
-          ).catch(err => {
-            $('#scannerModal').modal('hide');
-            Swal.fire({ icon: 'error', title: 'เปิดกล้องไม่สำเร็จ', text: 'เกิดข้อผิดพลาดจากระบบกล้อง: ' + err });
-            console.error(err);
-          });
-        } else {
-          $('#scannerModal').modal('hide');
-          Swal.fire('ไม่พบกล้อง', 'อุปกรณ์นี้ไม่พบกล้องที่สามารถใช้งานได้', 'error');
-        }
-      }).catch(err => {
-        $('#scannerModal').modal('hide');
-        Swal.fire({ 
-          icon: 'error', 
-          title: 'ไม่สามารถเข้าถึงกล้องได้', 
-          text: 'กรุณาอนุญาตให้เบราว์เซอร์เข้าถึงกล้อง (Permission Denied)' 
-        });
-        console.error("Camera access denied:", err);
-      });
-    });
-
-    $('#scannerModal').on('hidden.bs.modal', function () {
-      if (html5QrCode && html5QrCode.isScanning) {
-        html5QrCode.stop().then(() => {
-          html5QrCode.clear();
-        }).catch(err => console.log("หยุดกล้องไม่ได้", err));
-      }
-    });
-
-    // =========================================================================================
-
-    function scanImage(event) {
-      if (event.target.files.length == 0) return;
-      const file = event.target.files[0];
-      const tempScanner = new Html5Qrcode("reader"); 
-
-      Swal.fire({ title: 'กำลังอ่านไฟล์ภาพ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-      
-      tempScanner.scanFile(file, true)
-        .then(decodedText => {
-          onScanSuccess(decodedText);
-          event.target.value = ''; 
-        })
-        .catch(err => {
-          Swal.fire('ข้อผิดพลาด', 'ไม่พบ QR Code ในรูปภาพนี้ หรือรูปภาพไม่ชัดเจน', 'error');
-          event.target.value = '';
-        });
-    }
-
-    function onScanSuccess(decodedText, decodedResult) {
-      if (isProcessing) return; 
-      isProcessing = true;
-      
-      Swal.fire({ title: 'กำลังตรวจสอบข้อมูล...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
-      
-      google.script.run
-        .withSuccessHandler(handleTicketVerification)
-        .withFailureHandler(function(error) {
-           Swal.fire('ข้อผิดพลาด', error.message, 'error').then(() => isProcessing = false);
-        })
-        .verifyTicketScanned(decodedText);
-    }
-
-    function handleTicketVerification(response) {
-      if (!response.success || !response.found) {
-        Swal.fire({ icon: 'error', title: 'ตั๋วไม่ถูกต้อง', text: 'ไม่พบรหัสตั๋วนี้ในระบบ', confirmButtonColor: '#d33' }).then(resumeScanning);
-        return;
-      }
-
-      if (response.status === 'Checked-in') {
-        Swal.fire({ icon: 'warning', title: 'ตั๋วถูกใช้งานแล้ว', text: 'ตั๋วชื่อ: ' + response.name + ' (รหัส: ' + response.ticketId + ') ถูกใช้ Check-in ไปแล้ว', confirmButtonColor: '#ffc107' }).then(resumeScanning);
-        return;
-      }
-
-      // นำ Backtick ออกแล้วใช้การเชื่อม String ปกติ
-      let htmlContent = '<div class="text-start bg-light p-3 rounded border">' +
-                        '<p class="mb-1"><strong>ชื่อ:</strong> ' + response.name + '</p>' +
-                        '<p class="mb-1"><strong>Order ID:</strong> ' + response.orderId + '</p>' +
-                        '<p class="mb-0 text-muted small"><strong>Ticket:</strong> ' + response.ticketId + '</p>' +
-                        '</div>';
-
-      Swal.fire({
-        title: 'ตรวจสอบตั๋วสำเร็จ!',
-        html: htmlContent,
-        icon: 'success',
-        showCancelButton: true,
-        confirmButtonColor: '#28a745',
-        cancelButtonColor: '#6c757d',
-        confirmButtonText: '<i class="fas fa-check-circle"></i> ยืนยัน Check-in',
-        cancelButtonText: 'ยกเลิก (สแกนใหม่)'
-      }).then(function(result) {
-        if (result.isConfirmed) {
-          processCheckin(response.ticketId);
-        } else {
-          resumeScanning(); 
-        }
-      });
-    }
-
-    function processCheckin(ticketId) {
-      Swal.fire({ title: 'กำลังบันทึก Check-in...', allowOutsideClick: false, didOpen: function() { Swal.showLoading(); } });
-      
-      const loggedInUser = sessionStorage.getItem("loggedInUser") || "Unknown";
-      const personInCharge = sessionStorage.getItem("personInCharge") || "Admin";
-
-      google.script.run
-        .withSuccessHandler(function(response) {
-          if (response.success) {
-            Swal.fire({
-              icon: 'success', title: 'Check-in สำเร็จ!',
-              text: 'เวลาเข้างาน: ' + response.checkinTime,
-              confirmButtonColor: '#28a745', timer: 2500
-            }).then(resumeScanning);
-          } else {
-            Swal.fire('เกิดข้อผิดพลาด', response.error, 'error').then(resumeScanning);
-          }
-        })
-        .withFailureHandler(function(error) {
-          Swal.fire('ข้อผิดพลาด', error.message, 'error').then(resumeScanning);
-        })
-        .confirmCheckin(ticketId, loggedInUser, personInCharge);
-    }
-
-    function toggleMode() {
-      let btn = document.getElementById('toggleBtn');
-      let scannerSec = document.getElementById('scannerSection');
-      let tableSec = document.getElementById('tableSection');
-
-      if (currentMode === 'scanner') {
-        currentMode = 'table';
-        stopScanner(); 
-        scannerSec.style.display = 'none';
-        tableSec.style.display = 'flex';
-        btn.innerHTML = '<i class="fas fa-camera me-1"></i> แสดงสแกนเนอร์';
-        btn.className = "btn text-white fw-bold shadow-sm bg-success";
-        fetchTableData(); 
-      } else {
-        currentMode = 'scanner';
-        scannerSec.style.display = 'flex';
-        tableSec.style.display = 'none';
-        btn.innerHTML = '<i class="fas fa-table me-1"></i> แสดงตาราง Check-in';
-        btn.className = "btn text-white fw-bold shadow-sm";
-        btn.style.backgroundColor = "var(--jc-purple)";
+    // 2. อัปเดตข้อมูลขึ้น Navbar ทันทีที่โหลดเว็บเสร็จ
+    document.addEventListener("DOMContentLoaded", () => {
+        // นำค่าไปใส่ตาม ID ของ Navbar ที่คุณเตรียมไว้
+        if(document.getElementById('navUserDisplay')) document.getElementById('navUserDisplay').innerText = currentAdmin;
+        if(document.getElementById('navDeptDisplay')) document.getElementById('navDeptDisplay').innerText = currentUser;
+        if(document.getElementById('btnUsernameDisplay')) document.getElementById('btnUsernameDisplay').innerText = currentUser;
+        
         startScanner();
-      }
-    }
+    });
 
-    function fetchTableData() {
-      document.getElementById('loadingSpinner').style.display = 'block';
-      document.getElementById('tableContainer').style.display = 'none';
-      google.script.run
-        .withSuccessHandler(function(res) {
-          if (res.success) renderTable(res.headers, res.data);
-          else Swal.fire('Error', res.error, 'error');
-        }).getTicketData();
-    }
-
-    function renderTable(headers, dataRows) {
-      if ($.fn.DataTable.isDataTable('#checkinTable')) $('#checkinTable').DataTable().destroy();
-      
-      let theadHtml = '<tr>';
-      headers.forEach(function(header) { theadHtml += '<th>' + header + '</th>'; });
-      theadHtml += '</tr>';
-      document.getElementById('tableHead').innerHTML = theadHtml;
-
-      let statusIndex = headers.findIndex(function(h) { return h.includes('สถานะ Check-in'); });
-      let tbodyHtml = '';
-      
-      dataRows.forEach(function(row) {
-        tbodyHtml += '<tr>';
-        row.forEach(function(cell, index) {
-          if (index === statusIndex) {
-            let txt = cell.toString().trim() || 'Not Checked-in';
-            let badgeClass = txt === 'Checked-in' ? 'bg-success' : 'bg-secondary';
-            tbodyHtml += '<td class="text-center"><span class="badge ' + badgeClass + '">' + txt + '</span></td>';
-          } else {
-            tbodyHtml += '<td>' + cell + '</td>';
-          }
-        });
-        tbodyHtml += '</tr>';
-      });
-
-      document.getElementById('tableBody').innerHTML = tbodyHtml;
-      document.getElementById('loadingSpinner').style.display = 'none';
-      document.getElementById('tableContainer').style.display = 'block';
-
-      $('#checkinTable').DataTable({
-        responsive: true,
-        language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/th.json' },
-        order: [[0, 'desc']], 
-        lengthMenu: [[10, 25, 50, 100, -1], ['10', '25', '50', '100', 'ทั้งหมด']]
-      });
-    }
-
+    // ==========================================
+    // 🚀 ฟังก์ชันเปลี่ยนหน้า (แก้ไขไม่ให้ใช้ <?= url ?> แล้ว)
+    // ==========================================
     function goToHome() { 
       Swal.fire({
         title: 'กำลังกลับหน้าหลัก...', text: 'กรุณารอสักครู่', allowOutsideClick: false,
         showConfirmButton: false, didOpen: function() { Swal.showLoading(); }
       });
-      window.open('<?= url ?>?page=manage', '_top'); 
+      // ให้ลิงก์กลับไปที่ URL ของ GAS พร้อมแนบคำสั่ง ?page=manage
+      window.open(GAS_API_URL + '?page=manage', '_top'); 
     }
 
     function confirmLogout() { 
       Swal.fire({
-        title: 'ยืนยันการออกจากระบบ?', text: "คุณต้องการออกจากระบบใช่หรือไม่",
+        title: 'ปิดหน้าต่างสแกน?', text: "ต้องการกลับไปยังหน้าระบบหลักใช่หรือไม่",
         icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d', confirmButtonText: 'ออกจากระบบ', cancelButtonText: 'ยกเลิก'
+        cancelButtonColor: '#6c757d', confirmButtonText: 'กลับหน้าหลัก', cancelButtonText: 'ยกเลิก'
       }).then(function(result) {
         if (result.isConfirmed) {
-          sessionStorage.clear();
-          Swal.fire({
-            title: 'กำลังออกจากระบบ...', text: 'กรุณารอสักครู่', allowOutsideClick: false,
-            showConfirmButton: false, didOpen: function() { Swal.showLoading(); }
-          });
-          setTimeout(function() { window.open('<?= url ?>', '_top'); }, 1500);
+          // เนื่องจากคนละโดเมน การ Logout จริงๆ ควรไปทำที่หน้า Manage
+          // เราจึงพา User กลับไปที่หน้าแรกสุดของระบบ GAS
+          window.open(GAS_API_URL, '_top'); 
         }
       });
     }
+
+    // ==========================================
+    // 📷 ฟังก์ชันสแกนและส่งข้อมูลกลับ GAS (เหมือนเดิม)
+    // ==========================================
+    function callGasAPI(action, payload) {
+        payload.action = action; 
+        return fetch(GAS_API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+            body: JSON.stringify(payload)
+        }).then(response => response.json());
+    }
+
+    function startScanner() {
+        html5QrCode = new Html5Qrcode("reader");
+        html5QrCode.start(
+            { facingMode: "environment" },
+            { fps: 10, qrbox: { width: 250, height: 250 } },
+            (decodedText) => { onScanSuccess(decodedText); },
+            (errorMessage) => { }
+        ).catch(err => Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถเข้าถึงกล้องได้ โปรดอนุญาตสิทธิ์การใช้กล้อง', 'error'));
+    }
+
+    function onScanSuccess(decodedText) {
+        if (isProcessing) return; 
+        isProcessing = true;
+        
+        Swal.fire({ title: 'กำลังตรวจสอบข้อมูลตั๋ว...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+        
+        callGasAPI('verifyTicket', { ticketId: decodedText })
+            .then(response => handleTicketVerification(response))
+            .catch(error => {
+                Swal.fire('ข้อผิดพลาดการเชื่อมต่อ', error.message, 'error').then(() => isProcessing = false);
+            });
+    }
+
+    function handleTicketVerification(response) {
+      if (!response.success || !response.found) {
+        Swal.fire({ icon: 'error', title: 'ตั๋วไม่ถูกต้อง', text: 'ไม่พบรหัสตั๋วนี้ในระบบ' }).then(() => isProcessing = false);
+        return;
+      }
+      if (response.status === 'Checked-in') {
+        Swal.fire({ icon: 'warning', title: 'ตั๋วถูกใช้งานแล้ว', text: 'ตั๋วชื่อ: ' + response.name + ' ถูกใช้ Check-in ไปแล้ว' }).then(() => isProcessing = false);
+        return;
+      }
+
+      Swal.fire({
+        title: 'ตรวจสอบสำเร็จ!',
+        html: `<div class="text-start bg-light p-3 rounded"><b>ชื่อ:</b> ${response.name}<br><b>Ticket:</b> ${response.ticketId}</div>`,
+        icon: 'success', showCancelButton: true, confirmButtonText: 'ยืนยัน Check-in', cancelButtonText: 'ยกเลิก'
+      }).then((result) => {
+        if (result.isConfirmed) { processCheckin(response.ticketId); } 
+        else { isProcessing = false; }
+      });
+    }
+
+    function processCheckin(ticketId) {
+      Swal.fire({ title: 'กำลังบันทึกเข้าระบบ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+      
+      callGasAPI('confirmCheckin', { ticketId: ticketId, username: currentUser, adminName: currentAdmin })
+        .then(response => {
+          if (response.success) {
+            Swal.fire({ icon: 'success', title: 'Check-in สำเร็จ!', timer: 2000 }).then(() => isProcessing = false);
+          } else {
+            Swal.fire('ข้อผิดพลาด', response.error, 'error').then(() => isProcessing = false);
+          }
+        })
+        .catch(err => Swal.fire('เกิดข้อผิดพลาด', err.message, 'error').then(() => isProcessing = false));
+    }
+
+
   </script>
 </body>
 </html>
