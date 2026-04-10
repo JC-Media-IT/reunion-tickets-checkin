@@ -7,34 +7,134 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <style>
-    body { background-color: #f4f6f9; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }
-    .login-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
-    .btn-purple { background-color: #702A8C; color: white; }
-    .btn-purple:hover { background-color: #4A1C5D; color: white; }
+    body {
+      font-family: "Noto Sans Thai", sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #f0f2f5;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+      border-radius: 10px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+      border: none;
+    }
+
+    .login-card .card-header {
+      background-color: #743d88;
+      color: white;
+      text-align: center;
+      border-top-left-radius: 10px;
+      border-top-right-radius: 10px;
+      padding: 20px;
+    }
+    
+    .login-card .card-header img {
+        width: 50px;
+        margin-bottom: 10px;
+    }
+
+    .btn-login {
+      background-color: #743d88;
+      border-color: #6f42c1;
+      color: white;
+      font-weight: 500;
+      transition: background-color 0.2s;
+    }
+
+    .btn-login:hover {
+      background-color: #5a349d;
+      border-color: #533090;
+    }
+
+    .input-group-text {
+        width: 42px;
+        justify-content: center;
+    }
+
+     /* 🎯 เพิ่มโค้ดส่วนนี้เข้าไป */
+    @media (max-width: 576px) {
+      body {
+        align-items: flex-start; /* จัดให้ชิดด้านบน */
+        padding-top: 2vh;      /* เพิ่มระยะห่างจากขอบบน 5% ของความสูงจอ */
+      }
+    }
   </style>
 </head>
-<body>
 
-  <div class="login-card">
-    <img src="https://quota.jc.tu.ac.th/images/jc_logo.png" alt="JC Logo" height="80" class="mb-3">
-    <h4 class="mb-4 text-dark">ระบบ Check-in</h4>
-    
-    <form id="loginForm">
-      <div class="form-floating mb-3">
-        <input type="text" class="form-control" id="username" placeholder="Username" required>
-        <label for="username">Username</label>
+<body>
+  <div class="card login-card">
+    <div class="card-header">
+      <img src="https://quota.jc.tu.ac.th/images/jc_logo.png" alt="JC Logo">
+      <h4>ระบบ Admin JC Reunion 2026</h4>
+      <p class="mb-0">คณะวารสารศาสตร์และสื่อสารมวลชน</p>
+    </div>
+    <div class="card-body p-4">
+      <form id="loginForm">
+        <div class="mb-3">
+          <label for="username" class="form-label">ชื่อผู้ใช้ (Username)</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-user"></i></span>
+            <input type="text" class="form-control" id="username" placeholder="กรอกชื่อผู้ใช้" required>
+          </div>
+        </div>
+        <div class="mb-4">
+          <label for="password" class="form-label">รหัสผ่าน (Password)</label>
+          <div class="input-group">
+            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+            <input type="password" class="form-control" id="password" placeholder="กรอกรหัสผ่าน" required>
+          </div>
+        </div>
+
+        <div class="form-check mb-3">
+          <input class="form-check-input" type="checkbox" id="rememberMe">
+          <label class="form-check-label" for="rememberMe">
+            จำชื่อผู้ใช้ไว้
+          </label>
+        </div>
+
+        <div class="text-danger text-center" style="font-size: 0.9rem;">
+          (ท่านสามารถปิดแถบสีฟ้าด้านบนเพื่อขยายหน้าจอให้ใหญ่ขึ้น)
+        </div>
+
+
+        <div class="d-grid">
+          <button type="submit" class="btn btn-login btn-lg">
+            <i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ
+          </button>
+        </div>
+      </form>
+      <div class="text-center ">
+        <small class="text-muted">Copyright © 2026 Faculty of Journalism and Mass
+          Communication, Thammasat University. <br> All rights reserved.
+        Powered by
+          <a href="https://jc.tu.ac.th/th/personnel/staff#committee_214" class="icon-link" target="_top">
+            งานเทคโนโลยีดิจิทัลและการสื่อสาร คณะวารสารศาสตร์และสื่อสารมวลชน
+          </a>
+        </small>
       </div>
-      <div class="form-floating mb-4">
-        <input type="password" class="form-control" id="password" placeholder="Password" required>
-        <label for="password">Password</label>
-      </div>
-      <button type="submit" class="btn btn-purple w-100 py-2 fs-5">เข้าสู่ระบบ</button>
-    </form>
+    </div>
   </div>
 
   <script>
     // 🔴🔴 ใส่ URL ของ GAS WEB APP ตรงนี้ 🔴🔴
     const GAS_URL = "https://script.google.com/macros/s/AKfycbzY1xSgg_r2m1cbifZZm9SyURIYmt3afGR7n9qgL40kg18cWaJos1_gxiMoEKxdi9iW/exec"; 
+    window.addEventListener('load', function() {
+      const savedUser = localStorage.getItem('rememberedUser');
+      const savedPass = localStorage.getItem('rememberedPass'); 
+
+      if (savedUser) {
+        document.getElementById('username').value = savedUser;
+        document.getElementById('rememberMe').checked = true;
+        if (savedPass) {
+          document.getElementById('password').value = savedPass;
+        }
+      }
+    });
 
     document.getElementById('loginForm').addEventListener('submit', function(e) {
       e.preventDefault();
