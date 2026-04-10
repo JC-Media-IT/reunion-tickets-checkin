@@ -201,7 +201,14 @@
                         Swal.fire('แจ้งเตือน', `ตั๋วของคุณ <b>${res.name}</b><br>ได้ถูกเช็คอินไปแล้ว!`, 'warning').then(() => isProcessing = false);
                     } else {
                         Swal.fire({
-                          title: 'ตรวจสอบสำเร็จ', html: `<b>ชื่อบนตั๋ว:</b> ${res.name}`, icon: 'success', showCancelButton: true, confirmButtonText: 'ยืนยัน Check-in'
+                          title: 'ตรวจสอบสำเร็จ', 
+                          html: `<h4 class="text-success mb-3">ตั๋วถูกต้อง!</h4>
+                                 <b>รหัสตั๋ว:</b> ${decodedText}<br>
+                                 <b>ชื่อบนตั๋ว:</b> ${res.name}`, 
+                          icon: 'success', 
+                          showCancelButton: true, 
+                          confirmButtonText: 'ยืนยัน Check-in', 
+                          cancelButtonText: 'ยกเลิก'
                         }).then(result => {
                           if(result.isConfirmed) processCheckin(decodedText);
                           else isProcessing = false;
