@@ -87,6 +87,9 @@
         <div class="scanner-overlay shadow-sm">
           <h5 class="mb-3 text-dark fw-bold"><i class="fas fa-qrcode" style="color: var(--jc-purple);"></i> สแกน QR Code ตรวจสอบตั๋ว</h5>
           <div id="reader"></div>
+          <button id="cameraToggleBtn" class="btn btn-danger mt-3 w-100" onclick="toggleCamera()">
+            <i class="fas fa-video-slash"></i> ปิดกล้องพักหน้าจอ
+          </button>
         </div>
       </div>
     </div>
@@ -185,6 +188,8 @@
 
     // 📷 ระบบ Scanner
     let isProcessing = false;
+    let html5QrCode = null;    // 🟢 เก็บตัวแปรกล้องไว้ด้านนอก
+    let isCameraOpen = false;  // 🟢 เช็คสถานะว่ากล้องเปิดอยู่ไหม
     function startScanner() {
         const html5QrCode = new Html5Qrcode("reader");
         html5QrCode.start(
@@ -223,7 +228,48 @@
               }
             },
             (err) => { /* ซ่อน Error ของกล้องเวลาหาสแกนไม่เจอ */ }
-        );
+        ).then(() => {
+            // 🟢 เมื่อกล้องเปิดสำเร็จ ให้อัปเดตสถานะปุ่ม
+            isCameraOpen = true;
+            updateCameraBtnUI();
+        }).catch(err => {
+            console.log(err);
+        });
+    }
+
+    // 🟢 ฟังก์ชันหยุดกล้อง
+    function stopScanner() {
+        if (html5QrCode && isCameraOpen) {
+            html5QrCode.stop().then(() => {
+                isCameraOpen = false;
+                updateCameraBtnUI();
+            }).catch(err => {
+                console.log("Failed to stop camera", err);
+            });
+        }
+    }
+
+    // 🟢 ฟังก์ชันสลับ เปิด/ปิด เมื่อกดปุ่ม
+    function toggleCamera() {
+        if (isCameraOpen) {
+            stopScanner();
+        } else {
+            startScanner();
+        }
+    }
+
+    // 🟢 ฟังก์ชันเปลี่ยนหน้าตาปุ่มตามสถานะกล้อง
+    function updateCameraBtnUI() {
+        const btn = document.getElementById('cameraToggleBtn');
+        if (!btn) return;
+        
+        if (isCameraOpen) {
+            btn.className = "btn btn-danger mt-3 w-100";
+            btn.innerHTML = '<i class="fas fa-video-slash"></i> ปิดกล้องพักหน้าจอ';
+        } else {
+            btn.className = "btn btn-success mt-3 w-100";
+            btn.innerHTML = '<i class="fas fa-video"></i> เปิดกล้องสแกน';
+        }
     }
 
     // 💾 บันทึก Check-in
