@@ -4,9 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login - JC Reunion</title>
+  
   <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-   <link rel="icon" href="https://quota.jc.tu.ac.th/images/jc_logo.png" type="image/png">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  
   <style>
     body {
       font-family: "Noto Sans Thai", sans-serif;
@@ -50,6 +52,7 @@
     .btn-login:hover {
       background-color: #5a349d;
       border-color: #533090;
+      color: white;
     }
 
     .input-group-text {
@@ -57,11 +60,11 @@
         justify-content: center;
     }
 
-     /* 🎯 เพิ่มโค้ดส่วนนี้เข้าไป */
+     /* 🎯 จัด Layout บนมือถือ */
     @media (max-width: 576px) {
       body {
         align-items: flex-start; /* จัดให้ชิดด้านบน */
-        padding-top: 2vh;      /* เพิ่มระยะห่างจากขอบบน 5% ของความสูงจอ */
+        padding-top: 5vh;      /* เพิ่มระยะห่างจากขอบบน 5% ของความสูงจอ */
       }
     }
   </style>
@@ -91,30 +94,26 @@
           </div>
         </div>
 
-        <div class="form-check mb-3">
+        <div class="form-check mb-4">
           <input class="form-check-input" type="checkbox" id="rememberMe">
           <label class="form-check-label" for="rememberMe">
-            จำชื่อผู้ใช้ไว้
+            จำชื่อผู้ใช้และรหัสผ่านไว้
           </label>
         </div>
 
-        <div class="text-danger text-center" style="font-size: 0.9rem;">
-          (ท่านสามารถปิดแถบสีฟ้าด้านบนเพื่อขยายหน้าจอให้ใหญ่ขึ้น)
-        </div>
-
-
-        <div class="d-grid">
+        <div class="d-grid mb-4">
           <button type="submit" class="btn btn-login btn-lg">
-            <i class="fas fa-sign-in-alt"></i> เข้าสู่ระบบ
+            <i class="fas fa-sign-in-alt me-2"></i> เข้าสู่ระบบ
           </button>
         </div>
       </form>
-      <div class="text-center ">
+      
+      <div class="text-center">
         <small class="text-muted">Copyright © 2026 Faculty of Journalism and Mass
-          Communication, Thammasat University. <br> All rights reserved.
+          Communication, Thammasat University. <br> All rights reserved. <br>
         Powered by
-          <a href="https://jc.tu.ac.th/th/personnel/staff#committee_214" class="icon-link" target="_top">
-            งานเทคโนโลยีดิจิทัลและการสื่อสาร คณะวารสารศาสตร์และสื่อสารมวลชน
+          <a href="https://jc.tu.ac.th/th/personnel/staff#committee_214" class="text-decoration-none" style="color: #743d88;" target="_top">
+            งานเทคโนโลยีดิจิทัลและการสื่อสาร
           </a>
         </small>
       </div>
@@ -122,8 +121,10 @@
   </div>
 
   <script>
-    // 🔴🔴 ใส่ URL ของ GAS WEB APP ตรงนี้ 🔴🔴
+    // 🔴🔴 URL ของ GAS WEB APP 🔴🔴
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxuXKaJ55-V5a1PPEZogIGyHdu6ZL47m8RW7QQaeqXbmWZLOcNHKojZz2E-iXSLsYgA/exec"; 
+    
+    // โหลดข้อมูลที่จำไว้เมื่อเปิดหน้าเว็บ
     window.addEventListener('load', function() {
       const savedUser = localStorage.getItem('rememberedUser');
       const savedPass = localStorage.getItem('rememberedPass'); 
@@ -137,11 +138,13 @@
       }
     });
 
+    // เมื่อกดปุ่ม Login
     document.getElementById('loginForm').addEventListener('submit', function(e) {
       e.preventDefault();
       
       const user = document.getElementById('username').value;
       const pass = document.getElementById('password').value;
+      const rememberIsChecked = document.getElementById('rememberMe').checked;
 
       Swal.fire({ title: 'กำลังตรวจสอบ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
@@ -153,13 +156,23 @@
       .then(response => response.json())
       .then(data => {
         if(data.success) {
-          // เก็บข้อมูลลงเบราว์เซอร์
+          
+          // 🟢 บันทึก/ลบ การจดจำรหัสผ่าน
+          if (rememberIsChecked) {
+            localStorage.setItem('rememberedUser', user);
+            localStorage.setItem('rememberedPass', pass);
+          } else {
+            localStorage.removeItem('rememberedUser');
+            localStorage.removeItem('rememberedPass');
+          }
+
+          // เก็บ Session เพื่อให้รู้ว่า Login แล้ว
           sessionStorage.setItem('loggedInUser', data.username);
           sessionStorage.setItem('personInCharge', data.adminName);
           
           Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: 'ยินดีต้อนรับคุณ ' + data.adminName, timer: 1500, showConfirmButton: false })
           .then(() => {
-            // พาไปหน้าสแกน
+            // พาไปหน้าสแกน checkin.html
             window.location.href = 'checkin.html';
           });
         } else {
