@@ -1,310 +1,72 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-  <base target="_top">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <link rel="icon" href="https://quota.jc.tu.ac.th/images/jc_logo.png" type="image/png">
-  <title>ระบบ Check-in - JC Reunion</title>
-  
+  <title>Login - JC Reunion</title>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
-  <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-  <link href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;700&display=swap" rel="stylesheet">
-  
-  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-
   <style>
-    :root { --jc-purple: #702A8C; --jc-purple-light: #9B4F96; }
-    body { font-family: "Noto Sans Thai", sans-serif; background-color: #f4f6f9; display: flex; flex-direction: column; min-height: 100vh; padding-top: 80px; }
-    .bg-theme { background: linear-gradient(135deg, var(--jc-purple) 0%, var(--jc-purple-light) 100%); }
-    .brand-container { display: flex; align-items: center; text-decoration: none; color: white; }
-    .brand-logo { height: 45px; margin-right: 15px; background-color: white; border-radius: 50%; padding: 3px; }
-    .brand-text h4 { margin: 0; font-size: 1.2rem; font-weight: 700; }
-    .brand-text small { font-size: 0.75rem; opacity: 0.9; }
-    .user-info-group { text-align: right; line-height: 1.2; }
-    .nav-link.user-account-btn { color: white !important; font-weight: 500; display: flex; align-items: center; gap: 8px; border: 1.5px solid var(--jc-purple); border-radius: 50px; background-color: transparent; transition: all 0.3s ease-in-out; }
-    .user-account-btn:hover { background-color: var(--jc-purple); color: #ffffff !important; border-color: var(--jc-purple); }
-    footer { background-color: white; border-top: 1px solid #eee; }
-    .footer-link { color: var(--jc-purple); text-decoration: none; font-weight: 500; }
-    .table-card { border: none; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); background-color: white; padding: 20px; }
-    table.dataTable thead { background-color: var(--jc-purple); color: white; }
-    .dataTables_wrapper .dataTables_paginate .paginate_button.current { background: var(--jc-purple) !important; color: white !important; border: 1px solid var(--jc-purple) !important; }
-    
-    /* สไตล์เฉพาะกล้องสแกน */
-    #reader { width: 100%; max-width: 500px; margin: 0 auto; border-radius: 15px; overflow: hidden; border: 2px solid var(--jc-purple); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-    #reader video { object-fit: cover; }
-    .scanner-overlay { position: relative; padding: 20px; background: white; border-radius: 15px; text-align: center; }
+    body { background-color: #f4f6f9; display: flex; align-items: center; justify-content: center; height: 100vh; font-family: sans-serif; }
+    .login-card { background: white; padding: 40px; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); width: 100%; max-width: 400px; text-align: center; }
+    .btn-purple { background-color: #702A8C; color: white; }
+    .btn-purple:hover { background-color: #4A1C5D; color: white; }
   </style>
 </head>
 <body>
 
-  <nav class="navbar navbar-expand-lg navbar-dark bg-theme shadow fixed-top">
-    <div class="container-fluid px-3 px-lg-4"> 
-      <a class="brand-container me-auto" href="#">
-        <img src="https://quota.jc.tu.ac.th/images/jc_logo.png" alt="JC Logo" class="brand-logo">
-        <div class="brand-text">
-          <h4>ระบบ Admin JC Reunion</h4>
-          <small>เมนู Check-in หน้างาน</small>
-        </div>
-      </a>
-      <button class="navbar-toggler border-0 ms-2" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse flex-grow-1" id="navbarNav">
-        <ul class="navbar-nav ms-auto align-items-lg-center mt-3 mt-lg-0">
-          <li class="nav-item me-lg-3 user-info-group d-none d-lg-block">
-             <span class="text-white small">สวัสดี, <span id="navUserDisplay" class="fw-bold">...</span></span>
-             <br><span class="badge bg-white text-dark bg-opacity-75 rounded-pill" id="navDeptDisplay">...</span>
-          </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle user-account-btn px-3 py-2 ms-2" href="#" data-bs-toggle="dropdown">
-              <i class="fas fa-user-circle fa-lg me-1"></i> <span id="btnUsernameDisplay">My Account</span>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-2">
-              <li><button class="dropdown-item" onclick="goToHome()"><i class="fas fa-home me-2" style="color: var(--jc-purple);"></i>หน้าหลัก</button></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><button class="dropdown-item text-danger" onclick="confirmLogout()"><i class="fas fa-sign-out-alt me-2"></i>ออกจากระบบ</button></li>
-            </ul>
-          </li>
-        </ul>
-      </div>
-    </div>
-  </nav>
-
-  <div class="container-fluid py-4 flex-grow-1">
+  <div class="login-card">
+    <img src="https://quota.jc.tu.ac.th/images/jc_logo.png" alt="JC Logo" height="80" class="mb-3">
+    <h4 class="mb-4 text-dark">ระบบ Check-in</h4>
     
-    <div class="row mb-4 px-3">
-      <div class="col-12 d-flex justify-content-between align-items-center flex-wrap">
-        <div>
-          <h3 class="fw-bold text-dark border-start border-4 ps-3 mb-1" style="border-color: var(--jc-purple) !important;">
-            <i class="fas fa-qrcode" style="color: var(--jc-purple);"></i> เมนู Check-in เข้างาน
-          </h3>
-          <p class="text-muted ms-3 mb-0">สแกน E-Ticket (QR) ของผู้เข้าร่วมงาน</p>
-        </div>
-        
-        <div class="mt-3 mt-md-0 d-flex gap-2">
-          <button id="toggleBtn" class="btn text-white fw-bold shadow-sm" style="background-color: var(--jc-purple);" onclick="toggleMode()">
-            <i class="fas fa-table me-1"></i> แสดงตาราง Check-in
-          </button>
-          <button class="btn btn-outline-secondary" onclick="goToHome()">
-            <i class="fas fa-arrow-left"></i> กลับหน้าหลัก
-          </button>
-        </div>
+    <form id="loginForm">
+      <div class="form-floating mb-3">
+        <input type="text" class="form-control" id="username" placeholder="Username" required>
+        <label for="username">Username</label>
       </div>
-    </div>
-
-    <div class="row px-3" id="scannerSection">
-      <div class="col-12">
-        <div class="table-card text-center py-5">
-          <h4 class="text-dark mb-4">เลือกวิธีตรวจสอบ QR Code</h4>
-          <div class="d-flex flex-column flex-md-row justify-content-center gap-3">
-            
-            <button class="btn btn-outline-primary btn-lg shadow-sm px-4 py-3" id="btn-open-scanner">
-              <i class="fas fa-camera fa-2x mb-2 d-block"></i> 
-              เปิดกล้องสแกนสด
-            </button>
-            
-            <label class="btn btn-outline-secondary btn-lg shadow-sm px-4 py-3 mb-0" style="cursor: pointer;">
-              <i class="fas fa-image fa-2x mb-2 d-block"></i> 
-              อัปโหลดรูป QR
-              <input type="file" id="qr-input-file" accept="image/*" style="display: none;" onchange="scanImage(event)">
-            </label>
-
-          </div>
-          <p class="text-muted small mt-4"><i class="fas fa-info-circle"></i> หากเปิดกล้องไม่ได้ กรุณาตรวจสอบสิทธิ์การอนุญาตบนเบราว์เซอร์</p>
-        </div>
+      <div class="form-floating mb-4">
+        <input type="password" class="form-control" id="password" placeholder="Password" required>
+        <label for="password">Password</label>
       </div>
-    </div>
-
-    <div class="row px-3" id="tableSection" style="display: none;">
-      <div class="col-12">
-        <div class="table-card">
-          <div id="loadingSpinner" class="text-center py-5" style="display: none;">
-            <div class="spinner-border" style="color: var(--jc-purple); width: 3rem; height: 3rem;"></div>
-            <h5 class="mt-3 text-muted">กำลังโหลดข้อมูลตั๋ว...</h5>
-          </div>
-          <div id="tableContainer">
-            <div class="d-flex justify-content-end mb-3">
-               <button class="btn btn-sm btn-outline-secondary" onclick="fetchTableData()"><i class="fas fa-sync"></i> โหลดข้อมูลใหม่</button>
-            </div>
-            <table id="checkinTable" class="table table-striped table-hover table-bordered w-100" style="font-size: 14px;">
-              <thead id="tableHead"></thead>
-              <tbody id="tableBody"></tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    </div>
-
+      <button type="submit" class="btn btn-purple w-100 py-2 fs-5">เข้าสู่ระบบ</button>
+    </form>
   </div>
-
-  <footer class="bg-white mt-auto py-4">
-    <div class="container">
-      <div class="row align-items-center">
-        <div class="col-lg-6 text-center text-lg-start mb-2 mb-lg-0">
-          <p class="mb-0 text-muted small">Copyright © 2026 <strong>Faculty of Journalism and Mass Communication</strong>,<br>Thammasat University. All rights reserved.</p>
-        </div>
-        <div class="col-lg-6 text-center text-lg-end">
-          <p class="mb-0 text-muted small">Powered by <a href="https://jc.tu.ac.th/th/personnel/staff#committee_214" target="_blank" class="footer-link">งานเทคโนโลยีดิจิทัลและการสื่อสาร</a></p>
-          <p class="mb-0 mt-2 text-muted small"><span style="font-size: 0.9rem; color: #6c757d;">พบปัญหาการใช้งาน?: (Click ที่ไอคอน Line)</span><br>
-            <a href="https://line.me/R/ti/p/@dxx9496i" target="_top" class="text-decoration-none fw-bold" style="color: #00B900;"> <i class="fab fa-line"></i> แจ้งที่ Line OA: JC Service Center</a>
-          </p>
-        </div>
-      </div>
-    </div>
-  </footer>
-
-  <div class="modal fade" id="scannerModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header bg-theme text-white">
-          <h5 class="modal-title"><i class="fas fa-qrcode"></i> สแกน QR Code เข้างาน</h5>
-          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body text-center">
-          
-          <div id="scanner-loading" class="p-4 text-secondary">
-            <i class="fas fa-spinner fa-spin fa-2x mb-2"></i><br>กำลังเชื่อมต่อกล้อง...
-          </div>
-          
-          <div id="reader" style="width: 100%; max-width: 500px; margin: 0 auto; border-radius: 8px; overflow: hidden; border: 2px solid var(--jc-purple); display: none;"></div>
-          
-        </div>
-        <div class="modal-footer justify-content-center">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">ปิดกล้อง</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script src="https://code.jquery.com/jquery-3.7.0.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-  <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-  <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
-  <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
 
   <script>
-   // 🔴 วาง Web App URL จาก GAS ลงตรงนี้
-    const GAS_API_URL = "YOUR_GAS_WEB_APP_URL"; 
+    // 🔴🔴 ใส่ URL ของ GAS WEB APP ตรงนี้ 🔴🔴
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbzY1xSgg_r2m1cbifZZm9SyURIYmt3afGR7n9qgL40kg18cWaJos1_gxiMoEKxdi9iW/exec"; 
 
-    // 1. ดึงข้อมูลที่แนบมากับ URL
-    const urlParams = new URLSearchParams(window.location.search);
-    const currentAdmin = urlParams.get('admin') || "ไม่ระบุชื่อ";
-    const currentUser = urlParams.get('user') || "Admin";
-
-    let html5QrCode;
-    let isProcessing = false;
-
-    // 2. อัปเดตข้อมูลขึ้น Navbar ทันทีที่โหลดเว็บเสร็จ
-    document.addEventListener("DOMContentLoaded", () => {
-        // นำค่าไปใส่ตาม ID ของ Navbar ที่คุณเตรียมไว้
-        if(document.getElementById('navUserDisplay')) document.getElementById('navUserDisplay').innerText = currentAdmin;
-        if(document.getElementById('navDeptDisplay')) document.getElementById('navDeptDisplay').innerText = currentUser;
-        if(document.getElementById('btnUsernameDisplay')) document.getElementById('btnUsernameDisplay').innerText = currentUser;
-        
-        startScanner();
-    });
-
-    // ==========================================
-    // 🚀 ฟังก์ชันเปลี่ยนหน้า (แก้ไขไม่ให้ใช้ <?= url ?> แล้ว)
-    // ==========================================
-    function goToHome() { 
-      Swal.fire({
-        title: 'กำลังกลับหน้าหลัก...', text: 'กรุณารอสักครู่', allowOutsideClick: false,
-        showConfirmButton: false, didOpen: function() { Swal.showLoading(); }
-      });
-      // ให้ลิงก์กลับไปที่ URL ของ GAS พร้อมแนบคำสั่ง ?page=manage
-      window.open(GAS_API_URL + '?page=manage', '_top'); 
-    }
-
-    function confirmLogout() { 
-      Swal.fire({
-        title: 'ปิดหน้าต่างสแกน?', text: "ต้องการกลับไปยังหน้าระบบหลักใช่หรือไม่",
-        icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33',
-        cancelButtonColor: '#6c757d', confirmButtonText: 'กลับหน้าหลัก', cancelButtonText: 'ยกเลิก'
-      }).then(function(result) {
-        if (result.isConfirmed) {
-          // เนื่องจากคนละโดเมน การ Logout จริงๆ ควรไปทำที่หน้า Manage
-          // เราจึงพา User กลับไปที่หน้าแรกสุดของระบบ GAS
-          window.open(GAS_API_URL, '_top'); 
-        }
-      });
-    }
-
-    // ==========================================
-    // 📷 ฟังก์ชันสแกนและส่งข้อมูลกลับ GAS (เหมือนเดิม)
-    // ==========================================
-    function callGasAPI(action, payload) {
-        payload.action = action; 
-        return fetch(GAS_API_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify(payload)
-        }).then(response => response.json());
-    }
-
-    function startScanner() {
-        html5QrCode = new Html5Qrcode("reader");
-        html5QrCode.start(
-            { facingMode: "environment" },
-            { fps: 10, qrbox: { width: 250, height: 250 } },
-            (decodedText) => { onScanSuccess(decodedText); },
-            (errorMessage) => { }
-        ).catch(err => Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถเข้าถึงกล้องได้ โปรดอนุญาตสิทธิ์การใช้กล้อง', 'error'));
-    }
-
-    function onScanSuccess(decodedText) {
-        if (isProcessing) return; 
-        isProcessing = true;
-        
-        Swal.fire({ title: 'กำลังตรวจสอบข้อมูลตั๋ว...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
-        
-        callGasAPI('verifyTicket', { ticketId: decodedText })
-            .then(response => handleTicketVerification(response))
-            .catch(error => {
-                Swal.fire('ข้อผิดพลาดการเชื่อมต่อ', error.message, 'error').then(() => isProcessing = false);
-            });
-    }
-
-    function handleTicketVerification(response) {
-      if (!response.success || !response.found) {
-        Swal.fire({ icon: 'error', title: 'ตั๋วไม่ถูกต้อง', text: 'ไม่พบรหัสตั๋วนี้ในระบบ' }).then(() => isProcessing = false);
-        return;
-      }
-      if (response.status === 'Checked-in') {
-        Swal.fire({ icon: 'warning', title: 'ตั๋วถูกใช้งานแล้ว', text: 'ตั๋วชื่อ: ' + response.name + ' ถูกใช้ Check-in ไปแล้ว' }).then(() => isProcessing = false);
-        return;
-      }
-
-      Swal.fire({
-        title: 'ตรวจสอบสำเร็จ!',
-        html: `<div class="text-start bg-light p-3 rounded"><b>ชื่อ:</b> ${response.name}<br><b>Ticket:</b> ${response.ticketId}</div>`,
-        icon: 'success', showCancelButton: true, confirmButtonText: 'ยืนยัน Check-in', cancelButtonText: 'ยกเลิก'
-      }).then((result) => {
-        if (result.isConfirmed) { processCheckin(response.ticketId); } 
-        else { isProcessing = false; }
-      });
-    }
-
-    function processCheckin(ticketId) {
-      Swal.fire({ title: 'กำลังบันทึกเข้าระบบ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+      e.preventDefault();
       
-      callGasAPI('confirmCheckin', { ticketId: ticketId, username: currentUser, adminName: currentAdmin })
-        .then(response => {
-          if (response.success) {
-            Swal.fire({ icon: 'success', title: 'Check-in สำเร็จ!', timer: 2000 }).then(() => isProcessing = false);
-          } else {
-            Swal.fire('ข้อผิดพลาด', response.error, 'error').then(() => isProcessing = false);
-          }
-        })
-        .catch(err => Swal.fire('เกิดข้อผิดพลาด', err.message, 'error').then(() => isProcessing = false));
-    }
+      const user = document.getElementById('username').value;
+      const pass = document.getElementById('password').value;
 
+      Swal.fire({ title: 'กำลังตรวจสอบ...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
 
+      fetch(GAS_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' }, // ป้องกัน CORS
+        body: JSON.stringify({ action: "login", username: user, password: pass })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if(data.success) {
+          // เก็บข้อมูลลงเบราว์เซอร์
+          sessionStorage.setItem('loggedInUser', data.username);
+          sessionStorage.setItem('personInCharge', data.adminName);
+          
+          Swal.fire({ icon: 'success', title: 'สำเร็จ!', text: 'ยินดีต้อนรับคุณ ' + data.adminName, timer: 1500, showConfirmButton: false })
+          .then(() => {
+            // พาไปหน้าสแกน
+            window.location.href = 'checkin.html';
+          });
+        } else {
+          Swal.fire('ข้อผิดพลาด', data.error, 'error');
+        }
+      })
+      .catch(err => Swal.fire('Error', err.toString(), 'error'));
+    });
   </script>
 </body>
 </html>
