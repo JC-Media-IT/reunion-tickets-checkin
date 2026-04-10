@@ -3,43 +3,135 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Scanner & Table - JC Reunion</title>
+  <title>ระบบ Check-in - JC Reunion</title>
   <link rel="icon" href="https://quota.jc.tu.ac.th/images/jc_logo.png" type="image/png">
   
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;700&display=swap" rel="stylesheet">
+  
   <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" rel="stylesheet">
   <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.bootstrap5.min.css" rel="stylesheet">
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.5.0/js/responsive.bootstrap5.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
   <style>
-    body { background-color: #f4f6f9; font-family: sans-serif; padding-top: 70px; }
-    .bg-theme { background: #702A8C; }
-    .content-card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px;}
+    /* 🟢 สไตล์ดั้งเดิมจากไฟล์ GAS ของคุณ */
+    :root {
+      --jc-purple: #702A8C;
+      --jc-purple-light: #9B4F96;
+      --jc-purple-dark: #4A1C5D;
+    }
+
+    body {
+      font-family: "Noto Sans Thai", sans-serif;
+      background-color: #f4f6f9;
+      padding-top: 80px; 
+    }
+
+    .navbar {
+      background-color: var(--jc-purple) !important;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    }
+    
+    .navbar-brand {
+      font-weight: 700;
+      font-size: 1.4rem;
+    }
+
+    .header-title {
+      color: var(--jc-purple-dark);
+      font-weight: 700;
+      border-bottom: 3px solid var(--jc-purple-light);
+      padding-bottom: 10px;
+      margin-bottom: 20px;
+      display: inline-block;
+    }
+
+    .btn-custom {
+      background-color: var(--jc-purple);
+      color: white;
+      border: none;
+      transition: all 0.3s ease;
+    }
+
+    .btn-custom:hover {
+      background-color: var(--jc-purple-dark);
+      color: white;
+      transform: translateY(-2px);
+    }
+
+    .content-card {
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+      margin-bottom: 25px;
+      border-top: 5px solid var(--jc-purple);
+    }
+
+    .nav-icon {
+      font-size: 1.2rem;
+      margin-right: 5px;
+    }
+
+    #reader {
+      width: 100%;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.1);
+    }
+
+    .table-container {
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    }
+    
+    .badge-status {
+      font-size: 0.9em;
+      padding: 5px 10px;
+    }
   </style>
 </head>
 <body>
 
-  <nav class="navbar navbar-dark bg-theme shadow fixed-top">
-    <div class="container-fluid"> 
-      <a class="navbar-brand" href="#">ระบบ Check-in</a>
-      <div class="d-flex align-items-center text-white">
-        <span class="me-3" id="adminNameDisplay">กำลังโหลด...</span>
-        <button class="btn btn-sm btn-danger" onclick="logout()">ออกจากระบบ</button>
+  <nav class="navbar navbar-dark fixed-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#"><i class="fas fa-qrcode nav-icon"></i> ระบบ Check-in</a>
+      <div class="d-flex align-items-center gap-2">
+        <span class="text-white d-none d-md-inline" id="adminNameDisplay">กำลังโหลด...</span>
+        <button class="btn btn-sm btn-light text-dark fw-bold" onclick="window.location.href='manage.html'">
+          <i class="fas fa-home nav-icon"></i> <span class="d-none d-md-inline">หน้าหลัก</span>
+        </button>
+        <button class="btn btn-sm btn-danger fw-bold" onclick="confirmLogout()">
+          <i class="fas fa-sign-out-alt nav-icon"></i> <span class="d-none d-md-inline">ออก</span>
+        </button>
       </div>
     </div>
   </nav>
 
-  <div class="container mt-3">
+  <div class="container">
+    <div class="row mb-4">
+      <div class="col-12 text-center">
+        <h2 class="header-title"><i class="fas fa-camera"></i> สแกน QR Code ตรวจสอบตั๋ว</h2>
+      </div>
+    </div>
+
     <div class="row justify-content-center">
       <div class="col-md-8 col-lg-6">
         <div class="content-card text-center">
-          <h5><i class="fas fa-qrcode"></i> สแกน QR Code</h5>
-          <div id="reader" style="width: 100%; border-radius: 8px; overflow: hidden; border: 2px solid #702A8C;"></div>
+          <p class="text-muted mb-3">หันกล้องไปที่ QR Code ของผู้เข้าร่วมงานเพื่อทำการ Check-in</p>
+          <div id="reader"></div>
         </div>
       </div>
     </div>
@@ -47,13 +139,14 @@
     <div class="row mt-2">
       <div class="col-12">
         <div class="content-card">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="m-0"><i class="fas fa-list"></i> ประวัติการ Check-in ล่าสุด</h5>
-            <button class="btn btn-sm btn-outline-primary" onclick="loadTableData()"><i class="fas fa-sync-alt"></i> รีเฟรช</button>
+          <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+            <h4 class="m-0 fw-bold" style="color: #4A1C5D;"><i class="fas fa-list-alt"></i> ข้อมูลตั๋วทั้งหมด</h4>
+            <button class="btn btn-sm btn-custom" onclick="loadTableData()"><i class="fas fa-sync-alt"></i> รีเฟรชข้อมูล</button>
           </div>
-          <div class="table-responsive">
-            <table id="checkinTable" class="table table-striped table-bordered nowrap" style="width:100%">
-              <thead>
+          
+          <div class="table-container table-responsive">
+            <table id="checkinTable" class="table table-striped table-hover nowrap" style="width:100%">
+              <thead class="table-dark">
                 <tr>
                   <th>Timestamp</th>
                   <th>Ticket ID</th>
@@ -76,7 +169,7 @@
   </div>
 
   <script>
-    // 🔴🔴 ลบคำว่า YOUR_GAS_WEB_APP_URL แล้วใส่ลิงก์ Google Apps Script จริงๆ ของคุณ 🔴🔴
+    // URL ของ Google Apps Script Web App ของคุณ
     const GAS_URL = "https://script.google.com/macros/s/AKfycbxQMfVesDYy6iGENoi9KC9S5XwG8yT7fCXJE-BhN2evhdM0WqylAoc3DfMmoFVv3X03/exec"; 
 
     let currentAdmin = sessionStorage.getItem('personInCharge');
@@ -88,7 +181,7 @@
     }
 
     document.addEventListener("DOMContentLoaded", () => {
-        document.getElementById('adminNameDisplay').innerText = currentAdmin;
+        document.getElementById('adminNameDisplay').innerText = `Admin: ${currentAdmin}`;
         startScanner();
         loadTableData();
     });
@@ -111,30 +204,34 @@
             (decodedText) => { 
               if (!isProcessing) {
                 isProcessing = true;
-                Swal.fire({ title: 'ตรวจสอบตั๋ว...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                Swal.fire({ title: 'ตรวจสอบตั๋ว...', text: `QR Code: ${decodedText}`, allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                 
                 callGasAPI('verifyTicket', { ticketId: decodedText }).then(res => {
                   if(res.success && res.found) {
-                    // ป้องกันการแสกนซ้ำ
                     if(res.status === 'Checked-in') {
-                        Swal.fire('แจ้งเตือน', 'ตั๋วของคุณ ' + res.name + ' ได้ถูกเช็คอินไปแล้ว!', 'warning').then(() => isProcessing = false);
+                        Swal.fire({
+                          icon: 'warning', title: 'แจ้งเตือน', 
+                          html: `ตั๋วของคุณ <b>${res.name}</b><br>ได้ถูกเช็คอินไปแล้ว!`
+                        }).then(() => isProcessing = false);
                     } else {
                         Swal.fire({
-                          title: 'ตรวจสอบสำเร็จ', html: `<b>ชื่อบนตั๋ว:</b> ${res.name}`, icon: 'success', showCancelButton: true, confirmButtonText: 'ยืนยัน Check-in'
+                          title: 'ตรวจสอบสำเร็จ', 
+                          html: `<h4 class="text-success mb-3">ตั๋วถูกต้อง!</h4><b>ชื่อบนตั๋ว:</b> ${res.name}`, 
+                          icon: 'success', showCancelButton: true, confirmButtonText: 'ยืนยัน Check-in', cancelButtonText: 'ยกเลิก'
                         }).then(result => {
                           if(result.isConfirmed) processCheckin(decodedText);
                           else isProcessing = false;
                         });
                     }
                   } else {
-                    Swal.fire('ไม่พบตั๋ว', 'รหัสตั๋วไม่ถูกต้อง', 'error').then(() => isProcessing = false);
+                    Swal.fire('ไม่พบตั๋ว', 'รหัสตั๋วไม่ถูกต้อง หรือไม่มีในระบบ', 'error').then(() => isProcessing = false);
                   }
                 }).catch(err => {
                     Swal.fire('Error', 'เชื่อมต่อฐานข้อมูลล้มเหลว', 'error').then(() => isProcessing = false);
                 });
               }
             },
-            (err) => { }
+            (err) => { /* Ignore scanner errors */ }
         );
     }
 
@@ -143,58 +240,70 @@
       callGasAPI('confirmCheckin', { ticketId: ticketId, username: currentUser, adminName: currentAdmin })
       .then(res => {
         if(res.success) {
-          Swal.fire('สำเร็จ', 'บันทึกเวลาเข้างานเรียบร้อยแล้ว', 'success').then(() => {
+          Swal.fire({
+            icon: 'success', title: 'สำเร็จ!', text: 'บันทึกเวลาเข้างานเรียบร้อยแล้ว', timer: 2000, showConfirmButton: false
+          }).then(() => {
             isProcessing = false;
             loadTableData(); // โหลดตารางใหม่หลังกด Check-in
           });
+        } else {
+          Swal.fire('ข้อผิดพลาด', res.error || 'ไม่สามารถบันทึกได้', 'error').then(() => isProcessing = false);
         }
       });
     }
 
     function loadTableData() {
-  // 🟢 เปลี่ยนมาเรียก 'getAllTickets' แทน
-  callGasAPI('getAllTickets').then(res => {
-    if(res.success) {
-      let tbody = '';
-      res.data.forEach(row => {
-        // ทำป้ายสถานะให้ดูง่ายๆ
-        let statusBadge = row[7] === 'Checked-in' 
-          ? '<span class="badge bg-success">Checked-in</span>' 
-          : '<span class="badge bg-secondary">Not Checked-in</span>';
+      callGasAPI('getAllTickets').then(res => {
+        if(res.success) {
+          let tbody = '';
+          res.data.forEach(row => {
+            let statusBadge = row[7] === 'Checked-in' 
+              ? '<span class="badge bg-success badge-status"><i class="fas fa-check-circle"></i> Checked-in</span>' 
+              : '<span class="badge bg-secondary badge-status">Not Checked-in</span>';
 
-        tbody += `<tr>
-          <td>${row[0]}</td>
-          <td>${row[1]}</td>
-          <td>${row[2]}</td>
-          <td>${row[3]}</td>
-          <td>${row[4]}</td>
-          <td>${row[5]}</td>
-          <td>${row[6]}</td>
-          <td>${statusBadge}</td>
-          <td>${row[8]}</td>
-        </tr>`;
-      });
-      
-      // ล้างค่า DataTable ตัวเก่าทิ้งก่อน (ถ้ามี)
-      if(dataTableInstance) { 
-        $('#checkinTable').DataTable().clear().destroy(); 
-      }
-      
-      document.getElementById('tableBody').innerHTML = tbody;
-      
-      // สร้าง DataTable ตัวใหม่
-      dataTableInstance = $('#checkinTable').DataTable({ 
-        scrollX: true,        // 🟢 เปิดใช้งานการเลื่อนซ้าย-ขวา เพราะคอลัมน์เยอะ
-        order: [[8, 'desc']], // 🟢 เรียงตาม 'เวลาเข้างาน' (คอลัมน์ที่ 8) ล่าสุดขึ้นก่อน
-        language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/th.json' }
+            tbody += `<tr>
+              <td>${row[0]}</td>
+              <td>${row[1]}</td>
+              <td>${row[2]}</td>
+              <td>${row[3]}</td>
+              <td>${row[4]}</td>
+              <td>${row[5]}</td>
+              <td>${row[6]}</td>
+              <td>${statusBadge}</td>
+              <td>${row[8]}</td>
+            </tr>`;
+          });
+          
+          if(dataTableInstance) { 
+            $('#checkinTable').DataTable().clear().destroy(); 
+          }
+          
+          document.getElementById('tableBody').innerHTML = tbody;
+          
+          dataTableInstance = $('#checkinTable').DataTable({ 
+            scrollX: true, 
+            responsive: false, // ปิด responsive แบบซ่อนคอลัมน์ เพื่อให้ scrollX ทำงานได้เต็มที่
+            order: [[8, 'desc']], 
+            language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/th.json' },
+            lengthMenu: [[10, 25, 50, 100, -1], ['10', '25', '50', '100', 'ทั้งหมด']]
+          });
+        }
       });
     }
-  });
-}
 
-    function logout() {
-      sessionStorage.clear();
-      window.location.href = 'index.html';
+    // ฟังก์ชัน Log Out ให้มี Popup แจ้งเตือนสวยงามเหมือนเดิม
+    function confirmLogout() { 
+      Swal.fire({
+        title: 'ยืนยันการออกจากระบบ?', 
+        text: "คุณต้องการออกจากระบบใช่หรือไม่",
+        icon: 'warning', showCancelButton: true, confirmButtonColor: '#d33',
+        cancelButtonColor: '#6c757d', confirmButtonText: 'ออกจากระบบ', cancelButtonText: 'ยกเลิก'
+      }).then(function(result) {
+        if (result.isConfirmed) {
+          sessionStorage.clear();
+          window.location.href = 'index.html';
+        }
+      });
     }
   </script>
 </body>
