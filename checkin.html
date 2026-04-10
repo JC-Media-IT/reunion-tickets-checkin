@@ -3,13 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <link rel="icon" href="https://quota.jc.tu.ac.th/images/jc_logo.png" type="image/png">
   <title>Scanner & Table - JC Reunion</title>
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
   <link href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
-  <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel=\"stylesheet\">
+  <link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
@@ -17,26 +16,9 @@
   <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
   <style>
-    :root { --jc-purple: #702A8C; --jc-purple-light: #9B4F96; }
-    body { font-family: "Noto Sans Thai", sans-serif; background-color: #f4f6f9; display: flex; flex-direction: column; min-height: 100vh; padding-top: 80px; }
-    .bg-theme { background: linear-gradient(135deg, var(--jc-purple) 0%, var(--jc-purple-light) 100%); }
-    .brand-container { display: flex; align-items: center; text-decoration: none; color: white; }
-    .brand-logo { height: 45px; margin-right: 15px; background-color: white; border-radius: 50%; padding: 3px; }
-    .brand-text h4 { margin: 0; font-size: 1.2rem; font-weight: 700; }
-    .brand-text small { font-size: 0.75rem; opacity: 0.9; }
-    .user-info-group { text-align: right; line-height: 1.2; }
-    .nav-link.user-account-btn { color: white !important; font-weight: 500; display: flex; align-items: center; gap: 8px; border: 1.5px solid var(--jc-purple); border-radius: 50px; background-color: transparent; transition: all 0.3s ease-in-out; }
-    .user-account-btn:hover { background-color: var(--jc-purple); color: #ffffff !important; border-color: var(--jc-purple); }
-    footer { background-color: white; border-top: 1px solid #eee; }
-    .footer-link { color: var(--jc-purple); text-decoration: none; font-weight: 500; }
-    .table-card { border: none; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); background-color: white; padding: 20px; }
-    table.dataTable thead { background-color: var(--jc-purple); color: white; }
-    .dataTables_wrapper .dataTables_paginate .paginate_button.current { background: var(--jc-purple) !important; color: white !important; border: 1px solid var(--jc-purple) !important; }
-    
-    /* สไตล์เฉพาะกล้องสแกน */
-    #reader { width: 100%; max-width: 500px; margin: 0 auto; border-radius: 15px; overflow: hidden; border: 2px solid var(--jc-purple); box-shadow: 0 10px 20px rgba(0,0,0,0.1); }
-    #reader video { object-fit: cover; }
-    .scanner-overlay { position: relative; padding: 20px; background: white; border-radius: 15px; text-align: center; }
+    body { background-color: #f4f6f9; font-family: sans-serif; padding-top: 70px; }
+    .bg-theme { background: #702A8C; }
+    .content-card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px;}
   </style>
 </head>
 <body>
@@ -72,10 +54,10 @@
             <table id="checkinTable" class="table table-striped table-bordered" style="width:100%">
               <thead>
                 <tr>
-                  <th>เวลา</th>
+                  <th>เวลาเข้างาน</th>
                   <th>รหัสตั๋ว</th>
-                  <th>ชื่อผู้ร่วมงาน</th>
-                  <th>ผู้สแกน</th>
+                  <th>ชื่อบนตั๋ว</th>
+                  <th>JC รุ่น</th>
                 </tr>
               </thead>
               <tbody id="tableBody">
@@ -89,7 +71,7 @@
 
   <script>
     // 🔴🔴 ลบคำว่า YOUR_GAS_WEB_APP_URL แล้วใส่ลิงก์ Google Apps Script จริงๆ ของคุณ 🔴🔴
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxuXKaJ55-V5a1PPEZogIGyHdu6ZL47m8RW7QQaeqXbmWZLOcNHKojZz2E-iXSLsYgA/exec"; 
+    const GAS_URL = "https://script.google.com/macros/s/ใส่รหัสของคุณตรงนี้/exec"; 
 
     let currentAdmin = sessionStorage.getItem('personInCharge');
     let currentUser = sessionStorage.getItem('loggedInUser');
