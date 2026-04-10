@@ -87,14 +87,13 @@
   </div>
 
   <script>
-    // 🔴🔴 ใส่ URL ของ GAS WEB APP ตรงนี้ (ต้องตรงกับหน้า Login) 🔴🔴
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzY1xSgg_r2m1cbifZZm9SyURIYmt3afGR7n9qgL40kg18cWaJos1_gxiMoEKxdi9iW/exec"; 
+    // 🔴🔴 ลบคำว่า YOUR_GAS_WEB_APP_URL แล้วใส่ลิงก์ Google Apps Script จริงๆ ของคุณ 🔴🔴
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxuXKaJ55-V5a1PPEZogIGyHdu6ZL47m8RW7QQaeqXbmWZLOcNHKojZz2E-iXSLsYgA/exec"; 
 
     let currentAdmin = sessionStorage.getItem('personInCharge');
     let currentUser = sessionStorage.getItem('loggedInUser');
     let dataTableInstance = null;
 
-    // ระบบรักษาความปลอดภัย: ถ้าไม่มี Session ให้เด้งกลับหน้า Login
     if (!currentAdmin || !currentUser) {
       window.location.href = 'index.html';
     }
@@ -102,12 +101,9 @@
     document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('adminNameDisplay').innerText = currentAdmin;
         startScanner();
-        loadTableData(); // โหลดข้อมูลตารางทันที
+        loadTableData();
     });
 
-    // =====================================
-    // ระบบส่งข้อมูลคุยกับ GAS
-    // =====================================
     function callGasAPI(action, payload = {}) {
         payload.action = action; 
         return fetch(GAS_URL, {
@@ -117,9 +113,6 @@
         }).then(res => res.json());
     }
 
-    // =====================================
-    // ระบบสแกน
-    // =====================================
     let isProcessing = false;
     function startScanner() {
         const html5QrCode = new Html5Qrcode("reader");
@@ -133,15 +126,22 @@
                 
                 callGasAPI('verifyTicket', { ticketId: decodedText }).then(res => {
                   if(res.success && res.found) {
-                    Swal.fire({
-                      title: 'สำเร็จ', text: res.name, icon: 'success', showCancelButton: true, confirmButtonText: 'ยืนยัน Check-in'
-                    }).then(result => {
-                      if(result.isConfirmed) processCheckin(decodedText);
-                      else isProcessing = false;
-                    });
+                    // ป้องกันการแสกนซ้ำ
+                    if(res.status === 'Checked-in') {
+                        Swal.fire('แจ้งเตือน', 'ตั๋วของคุณ ' + res.name + ' ได้ถูกเช็คอินไปแล้ว!', 'warning').then(() => isProcessing = false);
+                    } else {
+                        Swal.fire({
+                          title: 'ตรวจสอบสำเร็จ', html: `<b>ชื่อบนตั๋ว:</b> ${res.name}`, icon: 'success', showCancelButton: true, confirmButtonText: 'ยืนยัน Check-in'
+                        }).then(result => {
+                          if(result.isConfirmed) processCheckin(decodedText);
+                          else isProcessing = false;
+                        });
+                    }
                   } else {
-                    Swal.fire('ไม่พบตั๋ว', 'รหัสไม่ถูกต้อง', 'error').then(() => isProcessing = false);
+                    Swal.fire('ไม่พบตั๋ว', 'รหัสตั๋วไม่ถูกต้อง', 'error').then(() => isProcessing = false);
                   }
+                }).catch(err => {
+                    Swal.fire('Error', 'เชื่อมต่อฐานข้อมูลล้มเหลว', 'error').then(() => isProcessing = false);
                 });
               }
             },
@@ -154,30 +154,30 @@
       callGasAPI('confirmCheckin', { ticketId: ticketId, username: currentUser, adminName: currentAdmin })
       .then(res => {
         if(res.success) {
-          Swal.fire('สำเร็จ', 'บันทึกแล้ว', 'success').then(() => {
+          Swal.fire('สำเร็จ', 'บันทึกเวลาเข้างานเรียบร้อยแล้ว', 'success').then(() => {
             isProcessing = false;
-            loadTableData(); // อัปเดตตารางใหม่
+            loadTableData(); // โหลดตารางใหม่หลังกด Check-in
           });
         }
       });
     }
 
-    // =====================================
-    // ระบบตาราง
-    // =====================================
     function loadTableData() {
       callGasAPI('getRecentCheckins').then(res => {
         if(res.success) {
           let tbody = '';
           res.data.forEach(row => {
+            // [เวลาเข้างาน, รหัสตั๋ว, ชื่อบนตั๋ว, JC รุ่น]
             tbody += `<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td></tr>`;
           });
           
-          // ทำลายตารางเก่าก่อนสร้างใหม่
           if(dataTableInstance) { $('#checkinTable').DataTable().destroy(); }
           
           document.getElementById('tableBody').innerHTML = tbody;
-          dataTableInstance = $('#checkinTable').DataTable({ order: [[0, 'desc']] });
+          dataTableInstance = $('#checkinTable').DataTable({ 
+            order: false, // เรียงมาให้จาก GAS แล้ว
+            language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/th.json' }
+          });
         }
       });
     }
