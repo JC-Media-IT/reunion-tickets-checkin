@@ -152,24 +152,45 @@
     }
 
     function loadTableData() {
-      callGasAPI('getRecentCheckins').then(res => {
-        if(res.success) {
-          let tbody = '';
-          res.data.forEach(row => {
-            // [เวลาเข้างาน, รหัสตั๋ว, ชื่อบนตั๋ว, JC รุ่น]
-            tbody += `<tr><td>${row[0]}</td><td>${row[1]}</td><td>${row[2]}</td><td>${row[3]}</td></tr>`;
-          });
-          
-          if(dataTableInstance) { $('#checkinTable').DataTable().destroy(); }
-          
-          document.getElementById('tableBody').innerHTML = tbody;
-          dataTableInstance = $('#checkinTable').DataTable({ 
-            order: false, // เรียงมาให้จาก GAS แล้ว
-            language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/th.json' }
-          });
-        }
+  // 🟢 เปลี่ยนมาเรียก 'getAllTickets' แทน
+  callGasAPI('getAllTickets').then(res => {
+    if(res.success) {
+      let tbody = '';
+      res.data.forEach(row => {
+        // ทำป้ายสถานะให้ดูง่ายๆ
+        let statusBadge = row[7] === 'Checked-in' 
+          ? '<span class="badge bg-success">Checked-in</span>' 
+          : '<span class="badge bg-secondary">Not Checked-in</span>';
+
+        tbody += `<tr>
+          <td>${row[0]}</td>
+          <td>${row[1]}</td>
+          <td>${row[2]}</td>
+          <td>${row[3]}</td>
+          <td>${row[4]}</td>
+          <td>${row[5]}</td>
+          <td>${row[6]}</td>
+          <td>${statusBadge}</td>
+          <td>${row[8]}</td>
+        </tr>`;
+      });
+      
+      // ล้างค่า DataTable ตัวเก่าทิ้งก่อน (ถ้ามี)
+      if(dataTableInstance) { 
+        $('#checkinTable').DataTable().clear().destroy(); 
+      }
+      
+      document.getElementById('tableBody').innerHTML = tbody;
+      
+      // สร้าง DataTable ตัวใหม่
+      dataTableInstance = $('#checkinTable').DataTable({ 
+        scrollX: true,        // 🟢 เปิดใช้งานการเลื่อนซ้าย-ขวา เพราะคอลัมน์เยอะ
+        order: [[8, 'desc']], // 🟢 เรียงตาม 'เวลาเข้างาน' (คอลัมน์ที่ 8) ล่าสุดขึ้นก่อน
+        language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/th.json' }
       });
     }
+  });
+}
 
     function logout() {
       sessionStorage.clear();
