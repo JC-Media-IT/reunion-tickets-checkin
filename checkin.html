@@ -190,8 +190,13 @@
     let isProcessing = false;
     let html5QrCode = null;    // 🟢 เก็บตัวแปรกล้องไว้ด้านนอก
     let isCameraOpen = false;  // 🟢 เช็คสถานะว่ากล้องเปิดอยู่ไหม
+
     function startScanner() {
-        const html5QrCode = new Html5Qrcode("reader");
+        // 🔴 แก้ไขตรงนี้: เอาคำว่า const ออก และเพิ่มการเช็คตัวแปร
+        if (!html5QrCode) {
+            html5QrCode = new Html5Qrcode("reader");
+        }
+        
         html5QrCode.start(
             { facingMode: "environment" },
             { fps: 10, qrbox: { width: 250, height: 250 } },
