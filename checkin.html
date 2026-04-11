@@ -21,6 +21,12 @@
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
   <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 
+  <link href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css" rel="stylesheet">
+  <script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.html5.min.js"></script>
+
   <style>
     :root { --jc-purple: #702A8C; --jc-purple-light: #9B4F96; }
     body { font-family: "Noto Sans Thai", sans-serif; background-color: #f4f6f9; display: flex; flex-direction: column; min-height: 100vh; padding-top: 80px; }
@@ -318,13 +324,26 @@
             dataTableInstance.rows.add(rowsData);
             dataTableInstance.draw(false); 
           } else {
-            // สร้างตารางครั้งแรก
+            // 🟢 สร้างตารางครั้งแรก (เพิ่มการตั้งค่าปุ่ม Excel ตรงนี้)
             dataTableInstance = $('#checkinTable').DataTable({ 
               data: rowsData,
               scrollX: true,
               order: [[8, 'desc']], // เรียงเวลาเข้างานล่าสุด
               language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/th.json' },
-              lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "ทั้งหมด"]]
+              lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "ทั้งหมด"]],
+              
+              // 🟢 คำสั่งจัดเลย์เอาต์ (ให้อยู่ข้างๆ ตัวเลือกแสดงแถว)
+              dom: '<"row mb-3"<"col-sm-12 col-md-6 d-flex align-items-center gap-3"lB><"col-sm-12 col-md-6"f>>rt<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+              
+              // 🟢 ตั้งค่าปุ่ม Export
+              buttons: [
+                {
+                  extend: 'excelHtml5',
+                  text: '<i class="fas fa-file-excel"></i> Export Excel',
+                  className: 'btn btn-success btn-sm', // ใช้ปุ่มสีเขียวของ Bootstrap
+                  title: 'JC_Reunion_Checkin_Report'   // ชื่อไฟล์ที่จะถูกดาวน์โหลด
+                }
+              ]
             });
           }
 
