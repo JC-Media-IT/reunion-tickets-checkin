@@ -114,27 +114,23 @@
 
   <script>
     // 🔴🔴 URL ของ GAS WEB APP 🔴🔴
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbx8NgntO-E3dVkdfdnrPXPpZ4i3XGCBmaEPiJyreW_QnxFq23XwYa71nLAXNwlz4VZK/exec"; 
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxNdeA5cJy6rMEzgCLzez85ZJX_RSRd0F0zTZvjsNwtJVz7jdWdJB_bhdqjPJX4RLME/exec"; 
     
-    // โหลดข้อมูลที่จำไว้เมื่อเปิดหน้าเว็บ
-    window.addEventListener('load', function() {
-      const savedUser = localStorage.getItem('rememberedUser');
-      const savedPass = localStorage.getItem('rememberedPass'); 
-
-      if (savedUser) {
-        document.getElementById('username').value = savedUser;
+    document.addEventListener('DOMContentLoaded', () => {
+      // โหลดการจดจำรหัส
+      const remUser = localStorage.getItem('rememberedUser');
+      const remPass = localStorage.getItem('rememberedPass');
+      if (remUser && remPass) {
+        document.getElementById('username').value = remUser;
+        document.getElementById('password').value = remPass;
         document.getElementById('rememberMe').checked = true;
-        if (savedPass) {
-          document.getElementById('password').value = savedPass;
-        }
       }
     });
 
-    // เมื่อกดปุ่ม Login
     document.getElementById('loginForm').addEventListener('submit', function(e) {
       e.preventDefault();
       
-      const user = document.getElementById('username').value;
+      const user = document.getElementById('username').value.trim();
       const pass = document.getElementById('password').value;
       const rememberIsChecked = document.getElementById('rememberMe').checked;
 
@@ -168,10 +164,13 @@
             window.location.href = 'checkin.html';
           });
         } else {
-          Swal.fire('ข้อผิดพลาด', data.error, 'error');
+          // แจ้ง Error แบบตรงไปตรงมา (ตรงกับที่ GAS ส่งมาให้)
+          Swal.fire({ icon: 'error', title: 'เข้าสู่ระบบล้มเหลว', text: data.error });
         }
       })
-      .catch(err => Swal.fire('Error', err.toString(), 'error'));
+      .catch(err => {
+        Swal.fire({ icon: 'error', title: 'ข้อผิดพลาดเครือข่าย', text: 'ไม่สามารถเชื่อมต่อเซิร์ฟเวอร์ได้' });
+      });
     });
   </script>
 </body>
