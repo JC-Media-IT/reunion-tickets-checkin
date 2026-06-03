@@ -115,7 +115,6 @@
             <table id="checkinTable" class="table table-striped table-hover nowrap" style="width:100%">
               <thead>
                 <tr>
-                  <th>Timestamp</th>
                   <th>Ticket ID</th>
                   <th>Order ID</th>
                   <th>ชื่อผู้ซื้อ</th>
@@ -314,7 +313,7 @@
 
             // จัดเรียง Array ให้ตรงคอลัมน์ DataTable
             rowsData.push([
-              row[0], row[1], row[2], row[3], row[4], row[5], row[6], statusBadge, row[8]
+              row[1], row[2], row[3], row[4], row[5], row[6], statusBadge, row[8]
             ]);
           });
           
@@ -328,7 +327,7 @@
             dataTableInstance = $('#checkinTable').DataTable({ 
               data: rowsData,
               scrollX: true,
-              order: [[8, 'desc']], // เรียงเวลาเข้างานล่าสุด
+              order: [[7, 'desc']], // เรียงเวลาเข้างานล่าสุด
               language: { url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/th.json' },
               lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "ทั้งหมด"]],
               
