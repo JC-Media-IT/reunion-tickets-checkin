@@ -91,7 +91,7 @@
     <div class="row justify-content-center mb-4">
       <div class="col-md-8 col-lg-6">
         <div class="scanner-overlay shadow-sm">
-          <h5 class="mb-3 text-dark fw-bold"><i class="fas fa-qrcode" style="color: var(--jc-purple);"></i> สแกน QR Code ตรวจสอบตั๋ว</h5>
+          <h5 class="mb-3 text-dark fw-bold"><i class="fas fa-qrcode" style="color: var(--jc-purple);"></i> สแกน QR Code ตรวจสอบบัตร</h5>
           <div id="reader"></div>
           <button id="cameraToggleBtn" class="btn btn-danger mt-3 w-100" onclick="toggleCamera()">
             <i class="fas fa-video-slash"></i> ปิดกล้องพักหน้าจอ
@@ -118,7 +118,7 @@
                   <th>Ticket ID</th>
                   <th>Order ID</th>
                   <th>ชื่อผู้ซื้อ</th>
-                  <th>ชื่อบนตั๋ว</th>
+                  <th>ชื่อบนบัตร</th>
                   <th>เบอร์โทรศัพท์</th>
                   <th>JC รุ่น</th>
                   <th>สถานะ Check-in</th>
@@ -208,18 +208,18 @@
             (decodedText) => { 
               if (!isProcessing) {
                 isProcessing = true;
-                Swal.fire({ title: 'ตรวจสอบตั๋ว...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+                Swal.fire({ title: 'ตรวจสอบบัตร...', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
                 
                 callGasAPI('verifyTicket', { ticketId: decodedText }).then(res => {
                   if(res.success && res.found) {
                     if(res.status === 'Checked-in') {
-                        Swal.fire('แจ้งเตือน', `ตั๋วของคุณ <b>${res.name}</b><br>ได้ถูกเช็คอินไปแล้ว!`, 'warning').then(() => isProcessing = false);
+                        Swal.fire('แจ้งเตือน', `บัตรของคุณ <b>${res.name}</b><br>ได้ถูกเช็คอินไปแล้ว!`, 'warning').then(() => isProcessing = false);
                     } else {
                         Swal.fire({
                           title: 'ตรวจสอบสำเร็จ', 
-                          html: `<h4 class="text-success mb-3">ตั๋วถูกต้อง!</h4>
-                                 <b>รหัสตั๋ว:</b> ${decodedText}<br>
-                                 <b>ชื่อบนตั๋ว:</b> ${res.name}`, 
+                          html: `<h4 class="text-success mb-3">บัตรถูกต้อง!</h4>
+                                 <b>รหัสบัตร:</b> ${decodedText}<br>
+                                 <b>ชื่อบนบัตร:</b> ${res.name}`, 
                           icon: 'success', 
                           showCancelButton: true, 
                           confirmButtonText: 'ยืนยัน Check-in', 
@@ -230,7 +230,7 @@
                         });
                     }
                   } else {
-                    Swal.fire('ไม่พบตั๋ว', 'รหัสตั๋วไม่ถูกต้อง', 'error').then(() => isProcessing = false);
+                    Swal.fire('ไม่พบบัตร', 'รหัสบัตรไม่ถูกต้อง', 'error').then(() => isProcessing = false);
                   }
                 }).catch(err => {
                     Swal.fire('Error', 'เชื่อมต่อฐานข้อมูลล้มเหลว', 'error').then(() => isProcessing = false);
